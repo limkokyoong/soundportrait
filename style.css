@@ -1,0 +1,14 @@
+html, body {
+  margin: 0;
+  padding: 0;
+}
+canvas {
+  display: block;
+}
+
+.centered-poem {
+    font-size: 248px;
+    color: black;
+    text-align: center;
+  line-height: 0.5; /* Adjust the line-height to make the spacing narrower */
+}

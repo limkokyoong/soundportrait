@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.1/p5.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.1/addons/p5.sound.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.9/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js-pdf/0.1.0/p5.pdf.js"></script>
+
+
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <meta charset="utf-8" />
+    <script src="sketch.js"></script>
+
+    <a href="page2.html">
+      <button>next</button>
+    </a>
+    
+    <style>
+body {
+  font-family: "Lato", sans-serif;
+}
+
+.sidenav {
+  height: 100%;
+  width: 0;
+  position: fixed;
+  z-index: 1;
+  top: 0;
+  left: 0;
+  background-color: #111;
+  overflow-x: hidden;
+  transition: 0.5s;
+  padding-top: 60px;
+}
+
+.sidenav a {
+  padding: 8px 8px 8px 32px;
+  text-decoration: none;
+  font-size: 25px;
+  color: #818181;
+  display: block;
+  transition: 0.3s;
+}
+
+.sidenav a:hover {
+  color: #f1f1f1;
+}
+
+.sidenav .closebtn {
+  position: absolute;
+  top: 0;
+  right: 25px;
+  font-size: 36px;
+  margin-left: 50px;
+}
+
+#main {
+  transition: margin-left .5s;
+  padding: 16px;
+}
+
+@media screen and (max-height: 450px) {
+  .sidenav {padding-top: 15px;}
+  .sidenav a {font-size: 18px;}
+}
+</style>
+
+  </head>
+  <body>
+    <main>
+    </main>
+
+    
+   
+    
+
+    
+<div id="mySidenav" class="sidenav">
+  <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+  <a href="#">About</a>
+  <a href="#">Services</a>
+  <a href="#">Clients</a>
+  <a href="#">Contact</a>
+</div>
+
+<div id="main">
+  <span style="font-size:30px;cursor:pointer" onclick="openNav()">&#9776; open</span>
+  <h1>Sound Portrait Generator</h1>
+  
+  
+
+
+<!-- upload -->
+<h2>Upload Audio File</h2>
+<p>select your audio recording, and gps data log</p>
+<!-- Upload inputs -->
+<input type="file" id="soundFile" accept="audio/*" onchange="loadAudioFile(event)">
+<ul id="soundList"></ul>
+<!-- <input type="file" id="soundFile" accept="audio/*"> -->
+<input type="file" id="excelFile" accept=".xlsx" onchange="loadExcelFile(event)">>
+<!-- <button onclick="processFiles()">Upload</button> -->
+</div>
+
+<!-- List of sounds and waves -->
+<ul id="soundList"></ul>
+
+<script>
+let audioFile;
+
+// Function to handle file selection and pass it to p5.js
+function loadAudioFile(event) {
+ // Get the uploaded file
+ audioFile = event.target.files[0];
+ // Pass the file to the global window object to be accessible in p5.js
+ window.audioFile = audioFile;
+ console.log("Audio file uploaded:", window.audioFile);
+ 
+ // Call the function in sketch.js to load and play the sound
+ loadSoundFromFile();
+}
+</script>
+
+<script>
+let map;
+let soundIndex = 1; // Sound ID index
+let sounds = {}; // To keep track of sounds and waveforms
+let markers = {}; // To keep track of markers
+let polylines = {}; // To keep track of polylines
+let audioFile; // To hold the uploaded audio file for p5.js
+// Load sound and coordinates
+function processFiles() {
+ const soundFile = document.getElementById('soundFile').files[0];
+ const excelFile = document.getElementById('excelFile').files[0];
+ 
+ if (soundFile && excelFile) {
+   audioFile = soundFile; // Assign the file to a global variable for p5.js
+   const soundId = `soundwalk${String(soundIndex).padStart(2, '0')}`;
+   loadSound(soundFile, soundId);
+   readExcel(excelFile, soundId);
+   soundIndex++; // Increment for the next upload
+ } else {
+   alert('Please upload both a sound file and an Excel file with GPS coordinates.');
+ }
+}
+
+// Load sound into waveform visualization and create play/pause buttons
+function loadSound(soundFile, soundId) {
+ const reader = new FileReader();
+ reader.onload = function(event) {
+   const soundItem = document.createElement('li');
+   soundItem.id = soundId;
+
+   // Create the play button
+   const playButton = document.createElement('button');
+   playButton.className = 'playButton';
+   playButton.textContent = 'Play';
+   playButton.addEventListener('click', () => playSound(soundId));
+   soundItem.appendChild(playButton);
+
+   document.getElementById('soundList').appendChild(soundItem);
+ };
+ reader.readAsDataURL(soundFile);
+}
+
+// Read GPS coordinates from Excel file
+function readExcel(excelFile, soundId) {
+ const reader = new FileReader();
+ reader.onload = function(event) {
+   const data = new Uint8Array(event.target.result);
+   const workbook = XLSX.read(data, { type: 'array' });
+   const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+   const rows = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+   
+   plotCoordinatesOnMap(rows, soundId);
+ };
+ reader.readAsArrayBuffer(excelFile);
+}
+
+// Play the sound
+function playSound(soundId) {
+ console.log(`Playing sound: ${soundId}`);
+}
+
+// Pass the audio file to p5.js sketch
+window.audioFile = null;
+
+</script>
+<!-- upload -->
+    
+    <div class="centered-poem">
+        Silent shadows trace unknown paths.
+    </div>
+
+    
+    <script>
+function openNav() {
+  document.getElementById("mySidenav").style.width = "250px";
+  document.getElementById("main").style.marginLeft = "250px";
+}
+
+function closeNav() {
+  document.getElementById("mySidenav").style.width = "0";
+  document.getElementById("main").style.marginLeft= "0";
+}
+      
+      
+</script>
+
+
+
+  </body>
+
+  
+</html>

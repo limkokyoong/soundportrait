@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sound and GPS Visualization</title>
+
+  <a href="page7.html">
+  <button>next</button>
+</a>
+  
+  <!-- Google Maps API -->
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDQhsdVxX13-rZ596ZIhXRuUU9PtAa7Y38&callback=initMap"></script>
+
+  <!-- WaveSurfer.js -->
+  <script src="https://unpkg.com/wavesurfer.js"></script>
+
+  <!-- SheetJS for reading Excel files -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.2/xlsx.full.min.js"></script>
+
+  <style>
+    #map {
+      height: 400px;
+      width: 100%;
+    }
+    #waveform {
+      width: 100%;
+      height: 100px;
+    }
+    #soundList {
+      list-style-type: none;
+    }
+    #playButton {
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Sound and GPS Visualization</h1>
+
+  <!-- Upload inputs -->
+  <input type="file" id="soundFile" accept="audio/*">
+  <input type="file" id="excelFile" accept=".xlsx">
+  <button onclick="processFiles()">Upload</button>
+
+  <!-- Sound wave and list -->
+  <div id="waveform"></div>
+  <ul id="soundList"></ul>
+
+  <!-- Playback Button -->
+  <button id="playButton">Play</button>
+
+  <!-- Map container -->
+  <div id="map"></div>
+
+  <script>
+    let map;
+    let polyline;
+    let marker;
+    let coordinates = [];
+    let waveform = WaveSurfer.create({
+      container: '#waveform',
+      waveColor: 'violet',
+      progressColor: 'purple'
+    });
+    
+    // Initialize Google Map
+    function initMap() {
+      map = new google.maps.Map(document.getElementById('map'), {
+        center: { lat: 10.762622, lng: 106.660172 },
+        zoom: 12
+      });
+
+      polyline = new google.maps.Polyline({
+        strokeColor: "#FF0000",
+        strokeOpacity: 1.0,
+        strokeWeight: 2
+      });
+      polyline.setMap(map);
+    }
+
+    // Load sound and coordinates
+    function processFiles() {
+      const soundFile = document.getElementById('soundFile').files[0];
+      const excelFile = document.getElementById('excelFile').files[0];
+      
+      if (soundFile && excelFile) {
+        loadSound(soundFile);
+        readExcel(excelFile);
+      } else {
+        alert('Please upload both a sound file and an Excel file with GPS coordinates.');
+      }
+    }
+
+    // Load sound into waveform visualization
+    function loadSound(soundFile) {
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        waveform.load(event.target.result);
+        addSoundToList(soundFile.name);
+      };
+      reader.readAsDataURL(soundFile);
+    }
+
+    // Read GPS coordinates from Excel file
+    function readExcel(excelFile) {
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        const data = new Uint8Array(event.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+        const rows = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+        
+        processCoordinates(rows);
+      };
+      reader.readAsArrayBuffer(excelFile);
+    }
+
+    // Add sound to the list
+    function addSoundToList(soundName) {
+      const listItem = document.createElement('li');
+      listItem.textContent = soundName;
+      document.getElementById('soundList').appendChild(listItem);
+    }
+
+    // Process coordinates and set up polyline
+    function processCoordinates(rows) {
+      coordinates = [];
+      
+      rows.forEach((row, index) => {
+        if (index > 0 && row.length >= 2) {
+          const lat = parseFloat(row[0]);
+          const lng = parseFloat(row[1]);
+          coordinates.push({ lat: lat, lng: lng });
+        }
+      });
+
+      if (coordinates.length > 0) {
+        polyline.setPath(coordinates);
+        
+        // Place the marker at the first coordinate
+        marker = new google.maps.Marker({
+          position: coordinates[0],
+          map: map,
+          title: "Start"
+        });
+      }
+    }
+
+    // Move the marker based on sound progress
+    function moveMarker() {
+      const duration = waveform.getDuration();
+      waveform.on('audioprocess', () => {
+        const progress = waveform.getCurrentTime() / duration;
+        const index = Math.min(Math.floor(progress * (coordinates.length - 1)), coordinates.length - 1);
+        const position = coordinates[index];
+        
+        if (position) {
+          marker.setPosition(position);
+        }
+      });
+    }
+
+    // Playback control
+    document.getElementById('playButton').addEventListener('click', function() {
+      if (waveform.isPlaying()) {
+        waveform.pause();
+        this.textContent = "Play";
+      } else {
+        waveform.play();
+        this.textContent = "Pause";
+        moveMarker(); // Start marker movement when playing
+      }
+    });
+
+    window.onload = initMap;
+  </script>
+</body>
+</html>
