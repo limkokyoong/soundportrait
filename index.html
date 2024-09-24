@@ -11,9 +11,9 @@
     <meta charset="utf-8" />
     <script src="sketch.js"></script>
 
-    <a href="page2.html">
+    <!-- <a href="page2.html">
       <button>next</button>
-    </a>
+    </a> -->
     
     <style>
 body {
@@ -75,13 +75,12 @@ body {
     
 
     
-<div id="mySidenav" class="sidenav">
-  <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
-  <a href="#">About</a>
-  <a href="#">Services</a>
-  <a href="#">Clients</a>
-  <a href="#">Contact</a>
-</div>
+    <div id="mySidenav" class="sidenav">
+      <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+      <a href="index.html">Sound Portrait</a>
+      <a href="page2.html">Sound and GPS Visualiser</a>
+      <a href="#">Contact</a>
+    </div>
 
 <div id="main">
   <span style="font-size:30px;cursor:pointer" onclick="openNav()">&#9776; open</span>
@@ -91,7 +90,7 @@ body {
 
 
 <!-- upload -->
-<h2>Upload Audio File</h2>
+<h2>Upload Audio File followed by GPX File</h2>
 <p>select your audio recording, and gps data log</p>
 <!-- Upload inputs -->
 <input type="file" id="soundFile" accept="audio/*" onchange="loadAudioFile(event)">
@@ -188,7 +187,7 @@ window.audioFile = null;
 <!-- upload -->
     
     <div class="centered-poem">
-        Silent shadows trace unknown paths.
+        <!-- Silent shadows trace unknown paths. -->
     </div>
 
     
